@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Assistente Financeiro</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1923">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:       #0f1923;
+  --surface:  #1a2535;
+  --panel:    #1e2d3d;
+  --card:     #243347;
+  --border:   rgba(255,255,255,.08);
+  --accent:   #3ecf8e;
+  --accent2:  #2ab37a;
+  --text:     #e2e8f0;
+  --muted:    #7b90a4;
+  --danger:   #f87171;
+  --warn:     #fbbf24;
+  --info:     #60a5fa;
+  --radius:   14px;
+  --radius-sm:8px;
+}
+
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center}
+
+/* PHONE SHELL */
+.phone{width:390px;height:844px;background:var(--surface);border-radius:40px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 2px rgba(255,255,255,.06),0 0 0 6px #0a1018,0 40px 80px rgba(0,0,0,.7);position:relative}
+
+/* STATUS BAR */
+.status-bar{background:var(--panel);padding:10px 24px 6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0}
+
+/* HEADER */
+.header{background:var(--panel);padding:10px 16px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.header-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.header-info{flex:1}
+.header-name{font-size:15px;font-weight:700;color:var(--text)}
+.header-sub{font-size:12px;color:var(--accent);display:flex;align-items:center;gap:4px}
+.header-sub::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+.header-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.header-btn:hover{background:rgba(62,207,142,.15);color:var(--accent)}
+
+/* TABS */
+.tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:10px 4px;font-size:11px;font-weight:600;text-align:center;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.03em}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* SCREENS */
+.screen{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.screen.active{display:flex}
+.screen::-webkit-scrollbar{width:3px}
+.screen::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* DASHBOARD */
+.dash-header{padding:16px 16px 0}
+.month-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.month-label{font-size:14px;font-weight:600;color:var(--text)}
+.month-nav{display:flex;gap:6px}
+.month-nav button{background:var(--card);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:14px}
+
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 12px}
+.sum-card{background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border);position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 var(--radius) 0 60px;opacity:.08}
+.sum-card.income::before{background:var(--accent)}
+.sum-card.total::before{background:var(--info)}
+.sum-card.fixed::before{background:var(--warn)}
+.sum-card.variable::before{background:var(--danger)}
+.sum-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+.sum-value{font-size:18px;font-weight:700;color:var(--text)}
+.sum-value.green{color:var(--accent)}
+.sum-value.red{color:var(--danger)}
+.sum-value.warn{color:var(--warn)}
+.sum-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* PROGRESS BAR */
+.progress-section{padding:0 16px 12px}
+.prog-card{background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border)}
+.prog-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.prog-title{font-size:13px;font-weight:600;color:var(--text)}
+.prog-pct{font-size:12px;font-weight:700}
+.prog-bar-bg{height:6px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.prog-detail{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+
+/* ALERTS */
+.alerts-section{padding:0 16px 12px}
+.alert-item{background:var(--card);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border)}
+.alert-item.danger{border-left:3px solid var(--danger)}
+.alert-item.warn{border-left:3px solid var(--warn)}
+.alert-item.ok{border-left:3px solid var(--accent)}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-text{flex:1}
+.alert-title{font-size:12px;font-weight:600;color:var(--text)}
+.alert-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* SECTIONS */
+.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:14px 16px 8px;display:flex;align-items:center;gap:6px}
+.section-title::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--accent);display:inline-block}
+
+/* EXPENSE FORM */
+.expense-form{padding:0 16px 12px}
+.field-group{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:8px}
+.field-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.field-row:last-child{border-bottom:none}
+.field-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.field-info{flex:1;min-width:0}
+.field-label{font-size:12px;font-weight:600;color:var(--text);display:block}
+.field-desc{font-size:10px;color:var(--muted);display:block;margin-top:1px}
+.field-input-wrap{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border-radius:8px;padding:4px 8px;width:100px;flex-shrink:0}
+.field-currency{font-size:12px;color:var(--muted);flex-shrink:0}
+.field-input{background:none;border:none;outline:none;color:var(--text);font-size:13px;font-weight:600;font-family:inherit;width:70px;text-align:right}
+.field-input::placeholder{color:var(--muted);font-weight:400}
+
+/* LIMIT ROW */
+.limit-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.15)}
+.limit-label{font-size:10px;color:var(--muted);flex:1}
+.limit-input-wrap{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border-radius:6px;padding:3px 7px}
+.limit-input{background:none;border:none;outline:none;color:var(--warn);font-size:12px;font-weight:600;font-family:inherit;width:65px;text-align:right}
+
+/* INCOME */
+.income-section{padding:0 16px 12px}
+.income-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px;display:flex;align-items:center;gap:12px}
+.income-icon{font-size:24px}
+.income-info{flex:1}
+.income-label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.income-input-big{background:rgba(255,255,255,.05);border:none;border-bottom:2px solid var(--accent);outline:none;color:var(--accent);font-size:22px;font-weight:700;font-family:inherit;width:100%;padding:4px 0}
+
+/* CHAT */
+.chat-area{flex:1;overflow-y:auto;padding:8px 12px 12px;background:var(--bg);display:flex;flex-direction:column;gap:2px;scroll-behavior:smooth}
+.chat-area::-webkit-scrollbar{width:3px}
+.chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.bubble-wrap{display:flex;flex-direction:column;margin-bottom:1px;animation:slideIn .2s ease}
+.bubble-wrap.out{align-items:flex-end}
+.bubble-wrap.in{align-items:flex-start}
+.bubble{max-width:84%;padding:8px 11px 20px;border-radius:10px;position:relative;word-break:break-word;line-height:1.5;font-size:14px}
+.bubble-wrap.out .bubble{background:#1e4d3a;color:var(--text);border-bottom-right-radius:2px}
+.bubble-wrap.in .bubble{background:var(--card);color:var(--text);border-bottom-left-radius:2px}
+.bubble-wrap.out .bubble::after{content:'';position:absolute;right:-6px;bottom:0;border:6px solid transparent;border-left-color:#1e4d3a;border-bottom-color:#1e4d3a}
+.bubble-wrap.in .bubble::before{content:'';position:absolute;left:-6px;bottom:0;border:6px solid transparent;border-right-color:var(--card);border-bottom-color:var(--card)}
+.bubble-time{position:absolute;bottom:4px;right:8px;font-size:10px;color:var(--muted)}
+
+.fin-card{background:rgba(0,0,0,.3);border-radius:8px;padding:10px 12px;margin:6px 0 2px;border-left:3px solid var(--accent)}
+.fin-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fin-label{color:var(--muted)}
+.fin-value{font-weight:600;color:var(--text)}
+.fin-value.green{color:var(--accent)}
+.fin-value.red{color:var(--danger)}
+.fin-value.warn{color:var(--warn)}
+
+.chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.25);color:var(--accent);font-size:12px;padding:5px 11px;border-radius:20px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.chip:hover{background:rgba(62,207,142,.25)}
+.chip:active{transform:scale(.96)}
+
+.typing-indicator{display:none;align-items:flex-start;margin-bottom:4px;animation:fadeIn .2s ease;padding:0 0 4px}
+.typing-indicator.visible{display:flex}
+.typing-bubble{background:var(--card);border-radius:10px 10px 10px 2px;padding:10px 14px;display:flex;align-items:center;gap:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite ease-in-out}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+
+/* INPUT */
+.input-area{background:var(--panel);padding:8px 10px;display:flex;align-items:flex-end;gap:8px;flex-shrink:0;border-top:1px solid var(--border)}
+.input-wrap{flex:1;background:var(--card);border-radius:24px;display:flex;align-items:flex-end;padding:6px 14px;gap:8px;min-height:44px}
+#user-input{flex:1;background:none;border:none;outline:none;resize:none;color:var(--text);font-family:inherit;font-size:14px;line-height:1.4;max-height:120px;overflow-y:auto;align-self:center}
+#user-input::placeholder{color:var(--muted)}
+.send-btn{width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,transform .1s}
+.send-btn:hover{background:var(--accent2)}
+.send-btn:active{transform:scale(.94)}
+.send-btn:disabled{background:var(--card);cursor:default}
+
+/* SAVE BTN */
+.save-fab{position:absolute;bottom:80px;right:16px;z-index:10;background:var(--accent);border:none;color:white;width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(62,207,142,.4);transition:transform .15s}
+.save-fab:active{transform:scale(.92)}
+
+/* TOAST */
+.toast{position:absolute;top:100px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:500;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.visible{opacity:1}
+
+/* ANIMATIONS */
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* EDUCATION CARDS */
+.edu-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.edu-header{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;user-select:none}
+.edu-header:hover{background:rgba(255,255,255,.03)}
+.edu-avatar{width:38px;height:38px;border-radius:10px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.edu-meta{flex:1;min-width:0}
+.edu-name{font-size:13px;font-weight:700;color:var(--text)}
+.edu-tagline{font-size:11px;color:var(--muted);margin-top:2px}
+.edu-toggle{font-size:12px;color:var(--muted);flex-shrink:0;transition:transform .2s}
+.edu-body{padding:0 14px 14px;border-top:1px solid var(--border)}
+.edu-quote{font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;padding:10px 0 10px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.edu-rules{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.edu-rule{display:flex;align-items:flex-start;gap:8px}
+.edu-rule-pct{font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;flex-shrink:0;min-width:36px;text-align:center}
+.edu-rule-text{font-size:12px;color:var(--muted);line-height:1.4;padding-top:2px}
+.edu-tip{font-size:11px;color:var(--info);background:rgba(96,165,250,.08);border-radius:8px;padding:8px 10px;line-height:1.5;margin-bottom:10px}
+.edu-apply-btn{width:100%;padding:9px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.25);color:var(--accent);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.edu-apply-btn:hover{background:rgba(62,207,142,.22)}
+.sim-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.sim-row:last-child{border-bottom:none}
+
+/* CONFIRM MODAL */
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:300;animation:fadeIn .2s ease}
+.modal-box{background:var(--panel);border-radius:var(--radius);border:1px solid var(--border);padding:22px 20px;margin:20px;width:calc(100% - 40px)}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:18px}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.modal-btn:hover{opacity:.85}
+.modal-btn.cancel{background:var(--card);color:var(--muted)}
+.modal-btn.confirm{background:var(--danger);color:white}
+
+/* SAVE BOTTOM BAR */
+.save-bar{display:flex;gap:8px;padding:8px 16px;background:var(--panel);border-top:1px solid var(--border);flex-shrink:0}
+.save-bar button{flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-save{background:var(--accent);color:#0f1923}
+.btn-save:hover{background:var(--accent2)}
+.btn-reset{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.25)!important;color:var(--danger)}
+.btn-reset:hover{background:rgba(248,113,113,.22)}
+
+/* AI PILLS */
+.ai-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.ai-pill.active{background:rgba(62,207,142,.15);border-color:rgba(62,207,142,.35);color:var(--accent)}
+.ai-pill.gemini-active{background:rgba(96,165,250,.15);border-color:rgba(96,165,250,.35);color:var(--info)}
+
+/* METHOD PILLS */
+.method-pill{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.method-pill:hover{background:rgba(62,207,142,.1);border-color:rgba(62,207,142,.3);color:var(--accent)}
+.method-pill.active{background:rgba(62,207,142,.18);border-color:rgba(62,207,142,.45);color:var(--accent)}
+
+/* AUTOSAVE INDICATOR */
+.autosave-badge{position:absolute;top:72px;right:14px;font-size:10px;color:var(--accent);background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.2);border-radius:20px;padding:3px 8px;opacity:0;transition:opacity .4s;z-index:10;pointer-events:none}
+.autosave-badge.visible{opacity:1}
+
+@media(max-width:440px){
+  .phone{width:100%;height:100%;border-radius:0;box-shadow:none}
+  html,body{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- AUTOSAVE BADGE -->
+  <div class="autosave-badge" id="autosave-badge">✓ salvo automaticamente</div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span id="status-time">9:41</span>
+    <div style="display:flex;gap:5px;align-items:center">
+      <span>📶</span><span>🔋</span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-avatar">💰</div>
+    <div class="header-info">
+      <div class="header-name">Assistente Financeiro</div>
+      <div class="header-sub">Monitorando seus gastos</div>
+    </div>
+    <button class="header-btn" onclick="saveData()" title="Salvar dados">💾</button>
+    <button class="header-btn" onclick="confirmReset()" title="Resetar tudo" style="color:var(--danger)">🗑️</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dash')">📊 Resumo</div>
+    <div class="tab" onclick="switchTab('fixas')">🔒 Fixas</div>
+    <div class="tab" onclick="switchTab('variaveis')">📈 Variáveis</div>
+    <div class="tab" onclick="switchTab('invest')">💹 Invest.</div>
+    <div class="tab" onclick="switchTab('edu')">🎓 Métodos</div>
+    <div class="tab" onclick="switchTab('chat')">💬 IA</div>
+  </div>
+
+  <!-- ═══════════════ SCREEN: DASHBOARD ═══════════════ -->
+  <div class="screen active" id="screen-dash">
+    <div class="dash-header">
+      <div class="month-row">
+        <span class="month-label" id="month-label">Junho 2026</span>
+        <div class="month-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RENDA -->
+    <div class="income-section">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;padding:0 2px">💰 Fontes de Renda</div>
+
+      <!-- RENDA FIXA -->
+      <div class="income-card" style="margin-bottom:8px">
+        <div class="income-icon">💵</div>
+        <div class="income-info">
+          <span class="income-label">Renda Fixa (salário, pró-labore…)</span>
+          <div style="display:flex;align-items:baseline;gap:4px">
+            <span style="font-size:14px;color:var(--muted)">R$</span>
+            <input class="income-input-big" type="number" id="income" placeholder="0,00" min="0" step="100" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- RENDA VARIÁVEL -->
+      <div style="background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:12px;font-weight:600;color:var(--text)">📈 Renda Variável</span>
+          <button onclick="addIncomeSource()" style="background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.25);color:var(--accent);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">+ Adicionar</button>
+        </div>
+        <div id="var-income-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--muted)">Total variável este mês</span>
+          <span style="font-size:14px;font-weight:700;color:var(--accent)" id="var-income-total">R$ 0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS RESUMO -->
+    <div class="summary-grid">
+      <div class="sum-card income">
+        <div class="sum-label">Renda Total</div>
+        <div class="sum-value green" id="d-income">R$ 0</div>
+        <div class="sum-sub">fixa + variável</div>
+      </div>
+      <div class="sum-card total">
+        <div class="sum-label">Total Gastos</div>
+        <div class="sum-value" id="d-total">R$ 0</div>
+        <div class="sum-sub">fixas + variáveis</div>
+      </div>
+      <div class="sum-card fixed">
+        <div class="sum-label">Fixas</div>
+        <div class="sum-value warn" id="d-fixed">R$ 0</div>
+        <div class="sum-sub">despesas obrigatórias</div>
+      </div>
+      <div class="sum-card variable">
+        <div class="sum-label">Variáveis</div>
+        <div class="sum-value" id="d-variable">R$ 0</div>
+        <div class="sum-sub">controle de gastos</div>
+      </div>
+    </div>
+
+    <!-- BARRA PROGRESSO ORÇAMENTO -->
+    <div class="progress-section">
+      <div class="prog-card">
+        <div class="prog-header">
+          <span class="prog-title">Orçamento utilizado</span>
+          <span class="prog-pct" id="budget-pct" style="color:var(--accent)">0%</span>
+        </div>
+        <div class="prog-bar-bg">
+          <div class="prog-bar-fill" id="budget-bar" style="width:0%;background:var(--accent)"></div>
+        </div>
+        <div class="prog-detail">
+          <span id="budget-spent">Gasto: R$ 0</span>
+          <span id="budget-left">Sobra: R$ 0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="section-title">⚠️ Alertas</div>
+    <div class="alerts-section" id="alerts-container">
+      <div class="alert-item ok">
+        <div class="alert-icon">✅</div>
+        <div class="alert-text">
+          <div class="alert-title">Tudo dentro do limite</div>
+          <div class="alert-desc">Adicione sua renda e despesas para ver os alertas.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRÁFICO DESPESAS -->
+    <div class="section-title">📊 Distribuição</div>
+    <div style="padding:0 16px 16px">
+      <div style="background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px">
+        <div style="position:relative;height:180px">
+          <canvas id="pieChart" role="img" aria-label="Distribuição de despesas por categoria">Distribuição de despesas mensais</canvas>
+        </div>
+        <div id="pie-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:11px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCREEN: FIXAS ═══════════════ -->
+  <div class="screen" id="screen-fixas">
+    <div class="section-title">🔒 Despesas Fixas</div>
+    <div class="expense-form" id="form-fixas">
+
+      <!-- MORADIA -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🏠 Moradia</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🏠</div>
+          <div class="field-info">
+            <span class="field-label">Aluguel / Financiamento</span>
+            <span class="field-desc">Moradia principal — inclui condomínio se houver</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="aluguel" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">💧</div>
+          <div class="field-info">
+            <span class="field-label">Água e Saneamento</span>
+            <span class="field-desc">Conta de água e taxa de esgoto mensais</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="agua" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">⚡</div>
+          <div class="field-info">
+            <span class="field-label">Energia Elétrica</span>
+            <span class="field-desc">Conta de luz — média dos últimos 3 meses</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="energia" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- CONECTIVIDADE -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">📡 Conectividade</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🌐</div>
+          <div class="field-info">
+            <span class="field-label">Internet Banda Larga</span>
+            <span class="field-desc">Plano fixo residencial de internet</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="internet" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">📱</div>
+          <div class="field-info">
+            <span class="field-label">Plano de Celular</span>
+            <span class="field-desc">Telefonia móvel — dados + ligações mensais</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="telefone" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSPORTE -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🚌 Transporte</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🚌</div>
+          <div class="field-info">
+            <span class="field-label">Transporte Público</span>
+            <span class="field-desc">Ônibus, metrô, VLT — passe mensal ou recarga</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="transp_pub" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">⛽</div>
+          <div class="field-info">
+            <span class="field-label">Combustível / Manutenção</span>
+            <span class="field-desc">Gasolina, óleo, seguro e IPVA mensalizado</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="transp_carro" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- SAÚDE E BEM-ESTAR -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🧠 Saúde e Bem-estar</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🧠</div>
+          <div class="field-info">
+            <span class="field-label">Terapia / Psicologia</span>
+            <span class="field-desc">Sessões mensais — presencial ou online</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="terapia" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🏥</div>
+          <div class="field-info">
+            <span class="field-label">Plano de Saúde</span>
+            <span class="field-desc">Convênio médico e odontológico mensal</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="plano_saude" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">💊</div>
+          <div class="field-info">
+            <span class="field-label">Medicamentos Fixos</span>
+            <span class="field-desc">Remédios de uso contínuo e suplementos</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="medicamentos" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- CARTÃO E DÍVIDAS -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">💳 Dívidas e Crédito</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">💳</div>
+          <div class="field-info">
+            <span class="field-label">Fatura do Cartão de Crédito</span>
+            <span class="field-desc">Total mensal da fatura (média ou valor fixo)</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="cartao" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🏦</div>
+          <div class="field-info">
+            <span class="field-label">Parcelas e Empréstimos</span>
+            <span class="field-desc">Prestações fixas de financiamentos e empréstimos</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="emprestimos" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSINATURAS -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">📺 Assinaturas</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🎬</div>
+          <div class="field-info">
+            <span class="field-label">Streaming (Netflix, Disney+…)</span>
+            <span class="field-desc">Plataformas de vídeo e entretenimento</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="streaming" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🎵</div>
+          <div class="field-info">
+            <span class="field-label">Música e Podcasts</span>
+            <span class="field-desc">Spotify, Deezer e outras plataformas de áudio</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="musica" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">☁️</div>
+          <div class="field-info">
+            <span class="field-label">Software e Cloud</span>
+            <span class="field-desc">Office, iCloud, Google One e apps pagos</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="cloud" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">📦</div>
+          <div class="field-info">
+            <span class="field-label">Outras Assinaturas</span>
+            <span class="field-desc">Amazon Prime, revistas, clube de vantagens</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="outras_ass" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- EDUCAÇÃO -->
+      <div class="field-group" style="margin-bottom:20px">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">📚 Educação</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🎓</div>
+          <div class="field-info">
+            <span class="field-label">Mensalidade Escolar / Faculdade</span>
+            <span class="field-desc">Escola, curso técnico ou graduação mensal</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="escola" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">💻</div>
+          <div class="field-info">
+            <span class="field-label">Cursos Online</span>
+            <span class="field-desc">Udemy, Coursera, idiomas e especializações</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="cursos" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCREEN: VARIÁVEIS ═══════════════ -->
+  <div class="screen" id="screen-variaveis">
+    <div class="section-title">📈 Despesas Variáveis</div>
+    <div style="padding:0 16px 6px;font-size:11px;color:var(--muted);line-height:1.5">
+      Defina um <strong style="color:var(--warn)">limite mensal</strong> para cada categoria e registre quanto gastou. Você será alertado ao ultrapassar.
+    </div>
+
+    <div class="expense-form" id="form-variaveis">
+
+      <!-- ALIMENTAÇÃO -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🍽️ Alimentação</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🛒</div>
+          <div class="field-info">
+            <span class="field-label">Supermercado</span>
+            <span class="field-desc">Compras de alimentos, higiene e limpeza</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="supermercado" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="supermercado" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🍔</div>
+          <div class="field-info">
+            <span class="field-label">Restaurantes e Delivery</span>
+            <span class="field-desc">Refeições fora de casa e pedidos online</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="restaurante" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="restaurante" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">☕</div>
+          <div class="field-info">
+            <span class="field-label">Cafés e Lanches</span>
+            <span class="field-desc">Cafeterias, padaria e lanchinhos do dia a dia</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="cafe" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="cafe" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ESPORTES E SAÚDE -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🏋️ Esportes e Saúde</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🏋️</div>
+          <div class="field-info">
+            <span class="field-label">Academia / Ginástica</span>
+            <span class="field-desc">Mensalidade da academia ou pilates</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="academia" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="academia" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">⚽</div>
+          <div class="field-info">
+            <span class="field-label">Esportes e Atividades</span>
+            <span class="field-desc">Beach tennis, natação, corrida, lutas e afins</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="esportes" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="esportes" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">👟</div>
+          <div class="field-info">
+            <span class="field-label">Equipamentos Esportivos</span>
+            <span class="field-desc">Roupas esportivas, tênis e acessórios</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="equip_esporte" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="equip_esporte" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+
+      <!-- LAZER E ENTRETENIMENTO -->
+      <div class="field-group" style="margin-bottom:20px">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🎭 Lazer e Entretenimento</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🎬</div>
+          <div class="field-info">
+            <span class="field-label">Cinema, Shows e Eventos</span>
+            <span class="field-desc">Ingressos para filmes, shows, teatros e festivais</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="cinema" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="cinema" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">✈️</div>
+          <div class="field-info">
+            <span class="field-label">Viagens e Passeios</span>
+            <span class="field-desc">Viagens, hotéis, parques e turismo mensal</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="viagens" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="viagens" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🎮</div>
+          <div class="field-info">
+            <span class="field-label">Jogos e Hobbies</span>
+            <span class="field-desc">Games, livros, coleções e passatempos pessoais</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="jogos" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="jogos" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">👗</div>
+          <div class="field-info">
+            <span class="field-label">Roupas e Acessórios</span>
+            <span class="field-desc">Vestuário, sapatos, bolsas e acessórios pessoais</span>
+          </div>
+          <div class="field-input-wrap">
+            <span class="field-currency">R$</span>
+            <input class="field-input" type="number" placeholder="0" min="0" data-key="roupas" oninput="updateDash()">
+          </div>
+        </div>
+        <div class="limit-row" style="border-radius:0 0 var(--radius) var(--radius)">
+          <span class="limit-label">⚠️ Limite máximo: R$</span>
+          <div class="limit-input-wrap">
+            <input class="limit-input" type="number" placeholder="0" min="0" data-limit="roupas" oninput="updateDash()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCREEN: INVESTIMENTOS ═══════════════ -->
+  <div class="screen" id="screen-invest">
+    <div class="section-title">💹 Meus Investimentos</div>
+    <div style="padding:0 16px 6px;font-size:11px;color:var(--muted);line-height:1.5">
+      Registre seus aportes mensais e patrimônio por categoria. O assistente usará esses dados para análises personalizadas.
+    </div>
+
+    <!-- RESUMO PATRIMÔNIO -->
+    <div style="padding:0 16px 12px">
+      <div style="background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">💼 Patrimônio Total</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px">
+          <div>
+            <div style="font-size:26px;font-weight:700;color:var(--accent)" id="inv-patrimonio-total">R$ 0</div>
+            <div style="font-size:11px;color:var(--muted)">soma de todos os ativos</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:14px;font-weight:700;color:var(--info)" id="inv-aporte-total">R$ 0/mês</div>
+            <div style="font-size:11px;color:var(--muted)">aporte mensal total</div>
+          </div>
+        </div>
+        <!-- Mini barras por categoria -->
+        <div id="inv-mini-bars" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+
+    <!-- CATEGORIAS DE INVESTIMENTO -->
+    <div class="expense-form">
+
+      <!-- RENDA FIXA -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🏦 Renda Fixa</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🏛️</div>
+          <div class="field-info">
+            <span class="field-label">Tesouro Direto</span>
+            <span class="field-desc">Selic, IPCA+, Prefixado — patrimônio atual</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="tesouro" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="tesouro" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">📄</div>
+          <div class="field-info">
+            <span class="field-label">CDB / LCI / LCA</span>
+            <span class="field-desc">Certificados e letras de crédito bancárias</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="cdb" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="cdb" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">💰</div>
+          <div class="field-info">
+            <span class="field-label">Poupança</span>
+            <span class="field-desc">Rendimento da poupança (recomenda-se migrar)</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="poupanca" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="poupanca" oninput="updateInvest()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RENDA VARIÁVEL -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">📈 Renda Variável</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🇧🇷</div>
+          <div class="field-info">
+            <span class="field-label">Ações BR (B3)</span>
+            <span class="field-desc">Ações da bolsa brasileira — valor de mercado atual</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="acoesbr" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="acoesbr" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🌍</div>
+          <div class="field-info">
+            <span class="field-label">Ações Internacionais / ETFs</span>
+            <span class="field-desc">BDRs, ETFs globais (S&P500, IVVB11…)</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="etf" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="etf" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🏢</div>
+          <div class="field-info">
+            <span class="field-label">Fundos Imobiliários (FIIs)</span>
+            <span class="field-desc">FIIs de tijolo, papel e FOFs — valor de carteira</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="fii" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="fii" oninput="updateInvest()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIDÊNCIA E FUNDOS -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🛡️ Previdência e Fundos</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🛡️</div>
+          <div class="field-info">
+            <span class="field-label">Previdência Privada (PGBL/VGBL)</span>
+            <span class="field-desc">Plano de aposentadoria privado acumulado</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="previdencia" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="previdencia" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">📊</div>
+          <div class="field-info">
+            <span class="field-label">Fundos de Investimento</span>
+            <span class="field-desc">Fundos multimercado, DI, cambial e outros</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="fundos" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="fundos" oninput="updateInvest()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRIPTO E ALTERNATIVOS -->
+      <div class="field-group">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">₿ Cripto e Alternativos</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">₿</div>
+          <div class="field-info">
+            <span class="field-label">Criptomoedas</span>
+            <span class="field-desc">Bitcoin, Ethereum e outras — valor atual em R$</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="cripto" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="cripto" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🥇</div>
+          <div class="field-info">
+            <span class="field-label">Ouro / Commodities</span>
+            <span class="field-desc">Ouro físico, ETFs de ouro (GOLD11) e commodities</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="ouro" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="ouro" oninput="updateInvest()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESERVA DE EMERGÊNCIA -->
+      <div class="field-group" style="margin-bottom:20px">
+        <div style="padding:8px 12px 6px;background:rgba(0,0,0,.2)">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)">🛟 Reserva de Emergência</span>
+        </div>
+        <div class="field-row">
+          <div class="field-icon">🛟</div>
+          <div class="field-info">
+            <span class="field-label">Reserva de Emergência</span>
+            <span class="field-desc">Ideal: 6-12x seus custos mensais em liquidez diária</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+            <div class="field-input-wrap"><span class="field-currency">R$</span><input class="field-input" type="number" placeholder="0" min="0" data-inv-pat="reserva" oninput="updateInvest()"></div>
+            <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,.08);border-radius:6px;padding:2px 6px"><span style="font-size:10px;color:var(--info)">+R$</span><input style="background:none;border:none;outline:none;color:var(--info);font-size:11px;font-weight:600;font-family:inherit;width:55px;text-align:right" type="number" placeholder="0/mês" min="0" data-inv-ap="reserva" oninput="updateInvest()"></div>
+          </div>
+        </div>
+        <!-- STATUS RESERVA -->
+        <div id="reserva-status" style="padding:8px 12px;background:rgba(0,0,0,.15);font-size:11px;color:var(--muted);line-height:1.5"></div>
+      </div>
+
+    </div>
+
+    <!-- META DE APORTE -->
+    <div style="padding:0 16px 20px">
+      <div style="background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">🎯 Meta de Aporte Mensal</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:12px;color:var(--muted)">Quero investir</span>
+          <div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.05);border-radius:8px;padding:5px 10px;flex:1">
+            <span style="font-size:12px;color:var(--muted)">R$</span>
+            <input type="number" id="inv-meta" placeholder="0" min="0"
+              style="background:none;border:none;outline:none;color:var(--accent);font-size:14px;font-weight:700;font-family:inherit;flex:1;text-align:right"
+              oninput="updateInvest()">
+          </div>
+          <span style="font-size:12px;color:var(--muted)">por mês</span>
+        </div>
+        <div id="meta-status" style="font-size:11px;color:var(--muted);line-height:1.5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCREEN: EDUCAÇÃO FINANCEIRA ═══════════════ -->
+  <div class="screen" id="screen-edu">
+    <div class="section-title">🎓 Métodos de Educação Financeira</div>
+
+    <!-- MÉTODO ATIVO BANNER -->
+    <div style="padding:0 16px 10px">
+      <div id="active-method-banner" style="display:none;background:linear-gradient(135deg,rgba(62,207,142,.15),rgba(96,165,250,.1));border:1px solid rgba(62,207,142,.3);border-radius:var(--radius);padding:12px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span id="active-method-name" style="font-size:13px;font-weight:700;color:var(--accent)"></span>
+          <button onclick="clearActiveMethod()" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.25);color:var(--danger);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit">✕ Remover</button>
+        </div>
+        <div id="active-method-limits" style="display:flex;flex-direction:column;gap:4px"></div>
+        <button onclick="switchTab('variaveis')" style="margin-top:8px;width:100%;padding:7px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.25);color:var(--accent);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Ver limites aplicados nas Variáveis ↗</button>
+      </div>
+      <div id="no-method-hint" style="font-size:11px;color:var(--muted);line-height:1.5;padding:4px 0">
+        Selecione um método abaixo para <strong style="color:var(--accent)">aplicar automaticamente</strong> os limites de gastos e meta de investimento com base na sua renda.
+      </div>
+    </div>
+
+    <!-- MÉTODO SELECTOR PILLS -->
+    <div style="padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px" id="method-pills">
+      <button class="method-pill" data-m="buffett"  onclick="selectMethod('buffett')">🧙 Buffett</button>
+      <button class="method-pill" data-m="503020"   onclick="selectMethod('503020')">⚖️ 50/30/20</button>
+      <button class="method-pill" data-m="kakeibo"  onclick="selectMethod('kakeibo')">📓 Kakeibo</button>
+      <button class="method-pill" data-m="latte"    onclick="selectMethod('latte')">☕ Latte Factor</button>
+      <button class="method-pill" data-m="ramit"    onclick="selectMethod('ramit')">🤖 Ramit Sethi</button>
+      <button class="method-pill" data-m="envelope" onclick="selectMethod('envelope')">✉️ Envelopes</button>
+      <button class="method-pill" data-m="snowball" onclick="selectMethod('snowball')">❄️ Bola de Neve</button>
+    </div>
+
+    <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:10px">
+
+      <!-- WARREN BUFFETT -->
+      <div class="edu-card" data-method="buffett">
+        <div class="edu-header" onclick="toggleEdu('buffett')">
+          <div class="edu-avatar">🧙</div>
+          <div class="edu-meta">
+            <div class="edu-name">Método Warren Buffett</div>
+            <div class="edu-tagline">Pague-se primeiro. Sempre.</div>
+          </div>
+          <div class="edu-toggle" id="toggle-buffett">▼</div>
+        </div>
+        <div class="edu-body" id="body-buffett" style="display:none">
+          <div class="edu-quote">"Não poupem o que sobrou depois de gastar. Gastem o que sobrou depois de poupar."</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">20%+</span><span class="edu-rule-text">Investimentos — transferido no dia do salário, sem negociação</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">50%</span><span class="edu-rule-text">Necessidades essenciais (moradia, comida, saúde, transporte)</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(251,191,36,.15);color:var(--warn)">30%</span><span class="edu-rule-text">Lazer e gastos pessoais — o que sobrar é seu</span></div>
+          </div>
+          <div class="edu-tip">💡 Buffett investe em ativos com vantagem competitiva duradoura e nunca toca nos investimentos por impulso.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('buffett')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+      <!-- REGRA 50/30/20 -->
+      <div class="edu-card" data-method="503020">
+        <div class="edu-header" onclick="toggleEdu('503020')">
+          <div class="edu-avatar">⚖️</div>
+          <div class="edu-meta">
+            <div class="edu-name">Regra 50/30/20</div>
+            <div class="edu-tagline">Elizabeth Warren — simples e eficaz</div>
+          </div>
+          <div class="edu-toggle" id="toggle-503020">▼</div>
+        </div>
+        <div class="edu-body" id="body-503020" style="display:none">
+          <div class="edu-quote">"Equilíbrio é a chave: necessidades, desejos e futuro em harmonia."</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">50%</span><span class="edu-rule-text">Necessidades — aluguel, contas, mercado, transporte, saúde</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(251,191,36,.15);color:var(--warn)">30%</span><span class="edu-rule-text">Desejos — lazer, restaurantes, roupas, assinaturas extras</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">20%</span><span class="edu-rule-text">Futuro — poupança, investimentos, quitação de dívidas</span></div>
+          </div>
+          <div class="edu-tip">💡 Ideal para quem está começando. Fácil de controlar e não exige planilhas complexas.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('503020')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+      <!-- MÉTODO KAKEIBO -->
+      <div class="edu-card" data-method="kakeibo">
+        <div class="edu-header" onclick="toggleEdu('kakeibo')">
+          <div class="edu-avatar">📓</div>
+          <div class="edu-meta">
+            <div class="edu-name">Kakeibo Japonês</div>
+            <div class="edu-tagline">Consciência plena sobre cada gasto</div>
+          </div>
+          <div class="edu-toggle" id="toggle-kakeibo">▼</div>
+        </div>
+        <div class="edu-body" id="body-kakeibo" style="display:none">
+          <div class="edu-quote">"Antes de comprar, pergunte: É necessário? É importante? Posso viver sem isso?"</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">20%</span><span class="edu-rule-text">Poupança — definida ANTES de qualquer gasto no mês</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">55%</span><span class="edu-rule-text">Sobrevivência — tudo que é essencial para viver</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(251,191,36,.15);color:var(--warn)">25%</span><span class="edu-rule-text">Cultura e lazer — com reflexão prévia e intencional</span></div>
+          </div>
+          <div class="edu-tip">💡 Kakeibo (家計簿) — a reflexão antes do gasto reduz compras por impulso em até 35%.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('kakeibo')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+      <!-- FATOR LATTE -->
+      <div class="edu-card" data-method="latte">
+        <div class="edu-header" onclick="toggleEdu('latte')">
+          <div class="edu-avatar">☕</div>
+          <div class="edu-meta">
+            <div class="edu-name">Fator Latte — David Bach</div>
+            <div class="edu-tagline">Pequenos gastos diários destroem fortunas</div>
+          </div>
+          <div class="edu-toggle" id="toggle-latte">▼</div>
+        </div>
+        <div class="edu-body" id="body-latte" style="display:none">
+          <div class="edu-quote">"A riqueza está nos gastos invisíveis que você nem percebe que faz todo dia."</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(248,113,113,.15);color:var(--danger)">🔍</span><span class="edu-rule-text">Identifique seus "lattes" — gastos pequenos e frequentes sem valor real</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">✂️</span><span class="edu-rule-text">Corte ou reduza esses gastos automáticos e inconscientes</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">📈</span><span class="edu-rule-text">Invista automaticamente o valor economizado todo mês</span></div>
+          </div>
+          <div class="edu-tip">💡 R$ 20/dia = R$ 600/mês = R$ 7.200/ano. Investido a 10% a.a. por 30 anos = R$ 1,2 milhão.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('latte')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+      <!-- RAMIT SETHI -->
+      <div class="edu-card" data-method="ramit">
+        <div class="edu-header" onclick="toggleEdu('ramit')">
+          <div class="edu-avatar">🤖</div>
+          <div class="edu-meta">
+            <div class="edu-name">Finanças Automáticas — Ramit Sethi</div>
+            <div class="edu-tagline">Automatize para não depender da willpower</div>
+          </div>
+          <div class="edu-toggle" id="toggle-ramit">▼</div>
+        </div>
+        <div class="edu-body" id="body-ramit" style="display:none">
+          <div class="edu-quote">"Crie um sistema financeiro que funciona sozinho. Remova o humano da equação."</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">1º</span><span class="edu-rule-text">Salário cai → transferência automática para investimentos no mesmo dia</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">2º</span><span class="edu-rule-text">Débitos automáticos para todas as contas fixas (aluguel, contas, cartão)</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(251,191,36,.15);color:var(--warn)">3º</span><span class="edu-rule-text">O que sobrar é seu para gastar sem culpa — 100% livre</span></div>
+          </div>
+          <div class="edu-tip">💡 Sethi defende gastar sem culpa no que você valoriza, desde que o sistema automático cuide do futuro.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('ramit')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+      <!-- ENVELOPES -->
+      <div class="edu-card" data-method="envelope">
+        <div class="edu-header" onclick="toggleEdu('envelope')">
+          <div class="edu-avatar">✉️</div>
+          <div class="edu-meta">
+            <div class="edu-name">Método dos Envelopes</div>
+            <div class="edu-tagline">Controle físico e visual do dinheiro</div>
+          </div>
+          <div class="edu-toggle" id="toggle-envelope">▼</div>
+        </div>
+        <div class="edu-body" id="body-envelope" style="display:none">
+          <div class="edu-quote">"Quando o envelope esvazia, os gastos param. Simples assim."</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">40%</span><span class="edu-rule-text">Envelope Moradia — aluguel, contas, internet, telefone</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(251,191,36,.15);color:var(--warn)">20%</span><span class="edu-rule-text">Envelope Alimentação — mercado, delivery, restaurantes</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(167,139,250,.15);color:#a78bfa">15%</span><span class="edu-rule-text">Envelope Lazer — cinema, hobbies, roupas, diversão</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">25%</span><span class="edu-rule-text">Envelope Poupança — investimentos e reserva de emergência</span></div>
+          </div>
+          <div class="edu-tip">💡 A dor de ver o dinheiro físico reduzindo cria consciência real de consumo.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('envelope')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+      <!-- BOLA DE NEVE -->
+      <div class="edu-card" data-method="snowball">
+        <div class="edu-header" onclick="toggleEdu('snowball')">
+          <div class="edu-avatar">❄️</div>
+          <div class="edu-meta">
+            <div class="edu-name">Bola de Neve — Dave Ramsey</div>
+            <div class="edu-tagline">Elimine dívidas da menor para a maior</div>
+          </div>
+          <div class="edu-toggle" id="toggle-snowball">▼</div>
+        </div>
+        <div class="edu-body" id="body-snowball" style="display:none">
+          <div class="edu-quote">"Quitar dívidas não é matemática — é comportamento. A vitória psicológica importa."</div>
+          <div class="edu-rules">
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(248,113,113,.15);color:var(--danger)">10%</span><span class="edu-rule-text">Reserva mínima de emergência (R$ 1.000) antes de tudo</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(96,165,250,.15);color:var(--info)">Max</span><span class="edu-rule-text">Todo excedente vai para a menor dívida até quitá-la</span></div>
+            <div class="edu-rule"><span class="edu-rule-pct" style="background:rgba(62,207,142,.15);color:var(--accent)">15%</span><span class="edu-rule-text">Após quitar todas as dívidas, invista 15% da renda</span></div>
+          </div>
+          <div class="edu-tip">💡 Cada dívida quitada libera motivação real. As vitórias pequenas mantêm você no caminho.</div>
+          <button class="edu-apply-btn" onclick="selectMethod('snowball')">✅ Aplicar este método</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIMULAÇÃO -->
+    <div id="edu-simulation" style="display:none;padding:0 16px 20px">
+      <div style="background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px" id="sim-content"></div>
+    </div>
+  </div>
+
+    <!-- ═══════════════ SCREEN: CHAT ═══════════════ -->
+  <div class="screen" id="screen-chat" style="flex-direction:column">
+
+    <!-- GEMINI KEY BAR -->
+    <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:8px 12px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px;flex-shrink:0">✨</span>
+      <input id="gemini-api-key" type="password" placeholder="Cole sua Gemini API Key aqui…"
+        style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:12px;font-family:inherit;outline:none"
+        oninput="saveApiKey()">
+      <div id="ai-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--warn);flex-shrink:0"></div>
+      <a href="https://aistudio.google.com/app/apikey" target="_blank"
+        style="font-size:10px;color:var(--info);white-space:nowrap;text-decoration:none;flex-shrink:0">Obter key ↗</a>
+    </div>
+
+    <div class="chat-area" id="chat-area">
+      <div style="text-align:center;margin:10px 0 6px">
+        <span style="background:rgba(30,45,61,.85);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:8px" id="today-label"></span>
+      </div>
+      <!-- Mensagem de boas-vindas -->
+      <div class="bubble-wrap in">
+        <div class="bubble">
+          Olá! 👋 Sou seu <strong>Assistente Financeiro</strong>. Preencha sua renda e despesas nas abas acima e depois me pergunte qualquer coisa sobre sua situação financeira.<br><br>
+          Posso ajudar com análises, dicas de economia, planejamento de metas e muito mais!
+          <div class="chip-list">
+            <div class="chip" onclick="sendChip('Como estão meus gastos este mês?')">📊 Ver análise</div>
+            <div class="chip" onclick="sendChip('Onde posso economizar?')">💡 Economizar</div>
+            <div class="chip" onclick="sendChip('Estou dentro do orçamento?')">✅ Orçamento</div>
+            <div class="chip" onclick="sendChip('Dicas para guardar dinheiro')">🏦 Poupar</div>
+          </div>
+          <div class="bubble-time">agora</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-indicator" id="typing">
+      <div class="typing-bubble">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea id="user-input" rows="1" placeholder="Pergunte algo sobre suas finanças…"></textarea>
+      </div>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- SAVE / RESET BAR (hidden in chat screen) -->
+  <div class="save-bar" id="save-bar">
+    <button class="btn-save" onclick="saveData()">💾 Salvar dados</button>
+    <button class="btn-reset" onclick="confirmReset()">🗑️ Resetar tudo</button>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let pieChart = null;
+let currentMonth = new Date();
+
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ═══════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════
+function switchTab(name) {
+  const tabs = ['dash','fixas','variaveis','invest','edu','chat'];
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.getElementById('save-bar').style.display = name === 'chat' ? 'none' : 'flex';
+}
+
+// ═══════════════════════════════════════
+//  MONTH NAVIGATION
+// ═══════════════════════════════════════
+function changeMonth(dir) {
+  currentMonth.setMonth(currentMonth.getMonth() + dir);
+  document.getElementById('month-label').textContent =
+    MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+}
+
+// ═══════════════════════════════════════
+//  GET ALL VALUES
+// ═══════════════════════════════════════
+function getValues() {
+  const vals = {};
+  document.querySelectorAll('[data-key]').forEach(el => {
+    vals[el.dataset.key] = parseFloat(el.value) || 0;
+  });
+  return vals;
+}
+
+function getLimits() {
+  const lims = {};
+  document.querySelectorAll('[data-limit]').forEach(el => {
+    lims[el.dataset.limit] = parseFloat(el.value) || 0;
+  });
+  return lims;
+}
+
+// ═══════════════════════════════════════
+//  FIXED EXPENSE GROUPS
+// ═══════════════════════════════════════
+const FIXED_KEYS = [
+  'aluguel','agua','energia',
+  'internet','telefone',
+  'transp_pub','transp_carro',
+  'terapia','plano_saude','medicamentos',
+  'cartao','emprestimos',
+  'streaming','musica','cloud','outras_ass',
+  'escola','cursos'
+];
+
+const VARIABLE_KEYS = [
+  'supermercado','restaurante','cafe',
+  'academia','esportes','equip_esporte',
+  'cinema','viagens','jogos','roupas'
+];
+
+const LABELS = {
+  supermercado:'Supermercado', restaurante:'Delivery/Rest.', cafe:'Café/Lanches',
+  academia:'Academia', esportes:'Esportes', equip_esporte:'Equip. Esportivo',
+  cinema:'Cinema/Shows', viagens:'Viagens', jogos:'Jogos/Hobbies', roupas:'Roupas'
+};
+
+// ═══════════════════════════════════════
+//  UPDATE DASHBOARD
+// ═══════════════════════════════════════
+function updateDash() {
+  const vals = getValues();
+  const lims = getLimits();
+  const fixedIncome = parseFloat(document.getElementById('income').value) || 0;
+  const varIncome = getVarIncome();
+  const income = fixedIncome + varIncome;
+
+  // Update variable income total display
+  document.getElementById('var-income-total').textContent =
+    'R$ ' + varIncome.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+  const totalFixed = FIXED_KEYS.reduce((s,k) => s + (vals[k]||0), 0);
+  const totalVariable = VARIABLE_KEYS.reduce((s,k) => s + (vals[k]||0), 0);
+  const totalSpent = totalFixed + totalVariable;
+  const remaining = income - totalSpent;
+  const pct = income > 0 ? Math.min((totalSpent/income)*100, 100) : 0;
+
+  const fmt = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+  document.getElementById('d-income').textContent = fmt(income);
+  document.getElementById('d-total').textContent = fmt(totalSpent);
+  document.getElementById('d-fixed').textContent = fmt(totalFixed);
+  document.getElementById('d-variable').textContent = fmt(totalVariable);
+
+  const budgetBar = document.getElementById('budget-bar');
+  const budgetPct = document.getElementById('budget-pct');
+  budgetBar.style.width = pct + '%';
+  budgetPct.textContent = Math.round(pct) + '%';
+
+  let barColor = '#3ecf8e';
+  if (pct > 100) barColor = '#f87171';
+  else if (pct > 80) barColor = '#fbbf24';
+  else if (pct > 60) barColor = '#60a5fa';
+  budgetBar.style.background = barColor;
+  budgetPct.style.color = barColor;
+
+  document.getElementById('budget-spent').textContent = 'Gasto: ' + fmt(totalSpent);
+  document.getElementById('budget-left').textContent = (remaining >= 0 ? 'Sobra: ' : 'Déficit: ') + fmt(Math.abs(remaining));
+
+  // ALERTS
+  generateAlerts(vals, lims, income, totalFixed, totalVariable, totalSpent, remaining, pct);
+
+  // PIE CHART
+  updatePieChart(vals, totalFixed, totalVariable);
+
+  // AUTOSAVE
+  autoSave();
+}
+
+// ═══════════════════════════════════════
+//  ALERTS
+// ═══════════════════════════════════════
+function generateAlerts(vals, lims, income, totalFixed, totalVariable, totalSpent, remaining, pct) {
+  const container = document.getElementById('alerts-container');
+  const alerts = [];
+
+  if (income === 0) {
+    alerts.push({type:'ok', icon:'ℹ️', title:'Preencha sua renda', desc:'Adicione sua renda mensal para monitorar seu orçamento.'});
+  } else {
+    if (remaining < 0) {
+      alerts.push({type:'danger', icon:'🚨', title:'DÉFICIT! Gastos excedem a renda', desc:`Você está gastando R$ ${Math.abs(remaining).toLocaleString('pt-BR',{minimumFractionDigits:0})} a mais do que ganha. Revise suas despesas urgentemente.`});
+    } else if (pct > 80) {
+      alerts.push({type:'warn', icon:'⚠️', title:'Atenção: mais de 80% da renda comprometida', desc:`Restam apenas R$ ${remaining.toLocaleString('pt-BR',{minimumFractionDigits:0})} disponíveis. Reduza gastos variáveis.`});
+    } else if (pct <= 80) {
+      alerts.push({type:'ok', icon:'✅', title:'Orçamento saudável', desc:`${Math.round(100-pct)}% da renda disponível — R$ ${remaining.toLocaleString('pt-BR',{minimumFractionDigits:0})} livres.`});
+    }
+
+    // check variable limits
+    VARIABLE_KEYS.forEach(k => {
+      const lim = lims[k] || 0;
+      const spent = vals[k] || 0;
+      if (lim > 0 && spent > lim) {
+        alerts.push({type:'danger', icon:'🔴', title:`Limite estourado: ${LABELS[k]}`, desc:`Gastou R$ ${spent.toLocaleString('pt-BR',{minimumFractionDigits:0})} de um limite de R$ ${lim.toLocaleString('pt-BR',{minimumFractionDigits:0})} (+R$ ${(spent-lim).toLocaleString('pt-BR',{minimumFractionDigits:0})})`});
+      } else if (lim > 0 && spent > lim * 0.8) {
+        alerts.push({type:'warn', icon:'🟡', title:`Próximo do limite: ${LABELS[k]}`, desc:`Gastou R$ ${spent.toLocaleString('pt-BR',{minimumFractionDigits:0})} de R$ ${lim.toLocaleString('pt-BR',{minimumFractionDigits:0})} (${Math.round((spent/lim)*100)}% do limite)`});
+      }
+    });
+
+    // fixed expenses > 50% of income
+    if (income > 0 && totalFixed / income > 0.5) {
+      alerts.push({type:'warn', icon:'🏠', title:'Despesas fixas acima de 50% da renda', desc:`R$ ${totalFixed.toLocaleString('pt-BR',{minimumFractionDigits:0})} em fixas representa ${Math.round((totalFixed/income)*100)}% da sua renda — acima do recomendado.`});
+    }
+  }
+
+  container.innerHTML = alerts.map(a => `
+    <div class="alert-item ${a.type}">
+      <div class="alert-icon">${a.icon}</div>
+      <div class="alert-text">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-desc">${a.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+//  PIE CHART
+// ═══════════════════════════════════════
+function updatePieChart(vals, totalFixed, totalVariable) {
+  const labels = [];
+  const data = [];
+  const colors = [];
+
+  const PALETTE = ['#3ecf8e','#60a5fa','#fbbf24','#f87171','#a78bfa','#34d399','#fb923c','#818cf8','#4ade80','#f472b6'];
+  let ci = 0;
+
+  if (totalFixed > 0) {
+    labels.push('Fixas'); data.push(totalFixed); colors.push('#60a5fa');
+  }
+
+  VARIABLE_KEYS.forEach(k => {
+    if (vals[k] > 0) {
+      labels.push(LABELS[k]);
+      data.push(vals[k]);
+      colors.push(PALETTE[ci++ % PALETTE.length]);
+    }
+  });
+
+  if (data.length === 0) {
+    labels.push('Sem dados'); data.push(1); colors.push('#243347');
+  }
+
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if (pieChart) pieChart.destroy();
+
+  pieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: {
+          label: ctx => ` R$ ${ctx.raw.toLocaleString('pt-BR',{minimumFractionDigits:0})} (${Math.round(ctx.parsed * 100 / ctx.dataset.data.reduce((a,b)=>a+b,0))}%)`
+        }
+      }}
+    }
+  });
+
+  const legend = document.getElementById('pie-legend');
+  legend.innerHTML = labels.map((l,i) => `
+    <span style="display:flex;align-items:center;gap:4px">
+      <span style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></span>${l}
+    </span>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+//  VARIABLE INCOME
+// ═══════════════════════════════════════
+const VAR_INCOME_SOURCES = [
+  {icon:'💼', label:'Freelance / Consultoria'},
+  {icon:'📦', label:'Venda de produtos'},
+  {icon:'🏠', label:'Aluguel de imóvel'},
+  {icon:'📈', label:'Dividendos / Investimentos'},
+  {icon:'🎓', label:'Aulas particulares'},
+  {icon:'🖥️', label:'Trabalho extra / Bico'},
+  {icon:'🎨', label:'Trabalhos criativos'},
+  {icon:'🔧', label:'Serviços avulsos'},
+  {icon:'💰', label:'Outros'},
+];
+
+let varIncomeSources = []; // [{id, icon, label, value}]
+let varIncomeIdCounter = 0;
+
+function getVarIncome() {
+  return varIncomeSources.reduce((s, src) => s + (parseFloat(src.value) || 0), 0);
+}
+
+function addIncomeSource() {
+  const id = ++varIncomeIdCounter;
+  varIncomeSources.push({ id, icon: '💰', label: 'Nova fonte', value: 0 });
+  renderVarIncome();
+  // focus the new label input
+  setTimeout(() => {
+    const el = document.getElementById('vi-label-' + id);
+    if (el) el.focus();
+  }, 50);
+}
+
+function removeIncomeSource(id) {
+  varIncomeSources = varIncomeSources.filter(s => s.id !== id);
+  renderVarIncome();
+  updateDash();
+}
+
+function updateIncomeSource(id, field, value) {
+  const src = varIncomeSources.find(s => s.id === id);
+  if (src) { src[field] = value; updateDash(); }
+}
+
+function renderVarIncome() {
+  const list = document.getElementById('var-income-list');
+  if (varIncomeSources.length === 0) {
+    list.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:6px 0">Nenhuma fonte adicionada. Toque em <strong>+ Adicionar</strong> para incluir freelances, aluguéis, dividendos…</div>`;
+    return;
+  }
+  list.innerHTML = varIncomeSources.map(src => `
+    <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+      <select onchange="updateIncomeSource(${src.id},'icon',this.value)"
+        style="background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:3px;cursor:pointer;outline:none">
+        ${VAR_INCOME_SOURCES.map(o => `<option value="${o.icon}" ${src.icon===o.icon?'selected':''}>${o.icon}</option>`).join('')}
+      </select>
+      <input id="vi-label-${src.id}" type="text" value="${src.label}"
+        onchange="updateIncomeSource(${src.id},'label',this.value)"
+        style="flex:1;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:12px;font-family:inherit;outline:none;padding:2px 0;min-width:0"
+        placeholder="Descrição…">
+      <div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.05);border-radius:6px;padding:3px 7px;flex-shrink:0">
+        <span style="font-size:11px;color:var(--muted)">R$</span>
+        <input type="number" min="0" value="${src.value||''}" placeholder="0"
+          oninput="updateIncomeSource(${src.id},'value',this.value)"
+          style="background:none;border:none;outline:none;color:var(--accent);font-size:13px;font-weight:700;font-family:inherit;width:70px;text-align:right">
+      </div>
+      <button onclick="removeIncomeSource(${src.id})"
+        style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;flex-shrink:0;line-height:1">×</button>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+//  INVESTMENTS
+// ═══════════════════════════════════════
+const INV_CATS = [
+  {key:'tesouro',    label:'Tesouro Direto',  color:'#3ecf8e'},
+  {key:'cdb',        label:'CDB/LCI/LCA',      color:'#34d399'},
+  {key:'poupanca',   label:'Poupança',          color:'#6ee7b7'},
+  {key:'acoesbr',    label:'Ações BR',          color:'#60a5fa'},
+  {key:'etf',        label:'ETFs/Inter.',       color:'#818cf8'},
+  {key:'fii',        label:'FIIs',              color:'#a78bfa'},
+  {key:'previdencia',label:'Previdência',       color:'#fbbf24'},
+  {key:'fundos',     label:'Fundos',            color:'#fb923c'},
+  {key:'cripto',     label:'Cripto',            color:'#f87171'},
+  {key:'ouro',       label:'Ouro',              color:'#fde68a'},
+  {key:'reserva',    label:'Reserva Emerg.',    color:'#5eead4'},
+];
+
+function getInvPat(key) {
+  const el = document.querySelector(`[data-inv-pat="${key}"]`);
+  return el ? (parseFloat(el.value) || 0) : 0;
+}
+function getInvAp(key) {
+  const el = document.querySelector(`[data-inv-ap="${key}"]`);
+  return el ? (parseFloat(el.value) || 0) : 0;
+}
+
+function updateInvest() {
+  const fmt = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const totalPat = INV_CATS.reduce((s,c) => s + getInvPat(c.key), 0);
+  const totalAp  = INV_CATS.reduce((s,c) => s + getInvAp(c.key), 0);
+
+  document.getElementById('inv-patrimonio-total').textContent = fmt(totalPat);
+  document.getElementById('inv-aporte-total').textContent = fmt(totalAp) + '/mês';
+
+  // Mini bars
+  const bars = document.getElementById('inv-mini-bars');
+  const cats = INV_CATS.filter(c => getInvPat(c.key) > 0);
+  if (cats.length === 0) {
+    bars.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:4px 0">Preencha os valores para ver a distribuição</div>`;
+  } else {
+    bars.innerHTML = cats.map(c => {
+      const pct = totalPat > 0 ? (getInvPat(c.key) / totalPat * 100) : 0;
+      return `<div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px">
+          <span>${c.label}</span>
+          <span style="color:${c.color};font-weight:600">${Math.round(pct)}% · ${fmt(getInvPat(c.key))}</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${c.color};border-radius:4px;transition:width .4s ease"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Reserva status
+  const vals = getValues();
+  const custoMensal = FIXED_KEYS.reduce((s,k) => s+(vals[k]||0),0) + VARIABLE_KEYS.reduce((s,k) => s+(vals[k]||0),0);
+  const reserva = getInvPat('reserva');
+  const reservaStatus = document.getElementById('reserva-status');
+  if (custoMensal > 0) {
+    const meses = reserva / custoMensal;
+    const ideal6 = custoMensal * 6;
+    const ideal12 = custoMensal * 12;
+    let icon, msg, color;
+    if (meses >= 12)      { icon='✅'; color='var(--accent)'; msg=`Excelente! ${meses.toFixed(1)} meses de reserva — acima do ideal.`; }
+    else if (meses >= 6)  { icon='✅'; color='var(--accent)'; msg=`Boa! ${meses.toFixed(1)} meses de reserva. Meta ideal: ${fmt(ideal12)} (12x).`; }
+    else if (meses >= 3)  { icon='⚠️'; color='var(--warn)';  msg=`Parcial: ${meses.toFixed(1)} meses. Ideal mínimo: ${fmt(ideal6)} (6x).`; }
+    else if (reserva > 0) { icon='🔴'; color='var(--danger)'; msg=`Insuficiente: ${meses.toFixed(1)} meses. Meta: ${fmt(ideal6)}.`; }
+    else                  { icon='🔴'; color='var(--danger)'; msg=`Sem reserva! Acumule ${fmt(ideal6)} (6x seus gastos de ${fmt(custoMensal)}/mês).`; }
+    reservaStatus.innerHTML = `<span style="color:${color}">${icon} ${msg}</span>`;
+  } else {
+    reservaStatus.innerHTML = `<span style="color:var(--muted)">ℹ️ Preencha suas despesas para calcular a reserva ideal.</span>`;
+  }
+
+  // Meta status
+  const meta = parseFloat(document.getElementById('inv-meta').value) || 0;
+  const metaStatus = document.getElementById('meta-status');
+  if (meta > 0) {
+    const diff = totalAp - meta;
+    const totalIncome = (parseFloat(document.getElementById('income').value)||0) + getVarIncome();
+    const pctRenda = totalIncome > 0 ? Math.round(totalAp / totalIncome * 100) : 0;
+    if (diff >= 0) {
+      metaStatus.innerHTML = `<span style="color:var(--accent)">✅ Meta batida! Aportando ${fmt(totalAp)}/mês (+${fmt(diff)} acima) — ${pctRenda}% da renda.</span>`;
+    } else {
+      metaStatus.innerHTML = `<span style="color:var(--warn)">⚠️ Faltam ${fmt(Math.abs(diff))}/mês para a meta. Atual: ${fmt(totalAp)} (${pctRenda}% da renda).</span>`;
+    }
+  } else {
+    metaStatus.innerHTML = `<span style="color:var(--muted)">Defina uma meta mensal de aporte para acompanhar seu progresso.</span>`;
+  }
+
+  autoSave();
+}
+
+function confirmReset() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <div class="modal-title">🗑️ Resetar o assistente?</div>
+      <div class="modal-desc">Todos os valores preenchidos (renda, despesas e limites) serão apagados permanentemente. O histórico do chat também será limpo.</div>
+      <div class="modal-btns">
+        <button class="modal-btn cancel" id="modal-cancel">Cancelar</button>
+        <button class="modal-btn confirm" id="modal-confirm">Sim, resetar tudo</button>
+      </div>
+    </div>
+  `;
+  document.querySelector('.phone').appendChild(overlay);
+  document.getElementById('modal-cancel').onclick = () => overlay.remove();
+  document.getElementById('modal-confirm').onclick = () => {
+    overlay.remove();
+    resetAll();
+  };
+}
+
+function resetAll() {
+  localStorage.removeItem('finapp_data');
+  document.getElementById('income').value = '';
+  document.querySelectorAll('[data-key]').forEach(el => { el.value = ''; });
+  document.querySelectorAll('[data-limit]').forEach(el => { el.value = ''; });
+  document.getElementById('gemini-api-key').value = '';
+  document.getElementById('ai-status-dot').style.background = 'var(--warn)';
+  varIncomeSources = [];
+  varIncomeIdCounter = 0;
+  renderVarIncome();
+  document.querySelectorAll('[data-inv-pat],[data-inv-ap]').forEach(el => { el.value = ''; });
+  const metaEl = document.getElementById('inv-meta');
+  if (metaEl) metaEl.value = '';
+  activeMethod = null;
+  document.querySelectorAll('.method-pill').forEach(p => p.classList.remove('active'));
+  const banner = document.getElementById('active-method-banner');
+  if (banner) banner.style.display = 'none';
+  const hint = document.getElementById('no-method-hint');
+  if (hint) hint.style.display = 'block';
+  updateInvest();
+
+  const chatArea = document.getElementById('chat-area');
+  const todayStr = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  chatArea.innerHTML = `
+    <div style="text-align:center;margin:10px 0 6px">
+      <span style="background:rgba(30,45,61,.85);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:8px">${todayStr}</span>
+    </div>
+    <div class="bubble-wrap in">
+      <div class="bubble">
+        Olá! 👋 Sou seu <strong>Assistente Financeiro</strong>. Preencha sua renda e despesas nas abas acima e depois me pergunte qualquer coisa sobre sua situação financeira.<br><br>
+        Cole sua <strong style="color:var(--info)">Gemini API Key</strong> no campo acima e pergunte qualquer coisa sobre suas finanças. Obtenha sua chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--info)">aistudio.google.com</a> ↗
+        <div class="chip-list">
+          <div class="chip" onclick="sendChip('Como estão meus gastos este mês?')">📊 Ver análise</div>
+          <div class="chip" onclick="sendChip('Onde posso economizar?')">💡 Economizar</div>
+          <div class="chip" onclick="sendChip('Estou dentro do orçamento?')">✅ Orçamento</div>
+          <div class="chip" onclick="sendChip('Dicas para guardar dinheiro')">🏦 Poupar</div>
+        </div>
+        <div class="bubble-time">agora</div>
+      </div>
+    </div>
+  `;
+  chatHistory.length = 0;
+  updateDash();
+  showToast('🗑️ Assistente resetado!');
+  switchTab('dash');
+}
+
+// ═══════════════════════════════════════
+//  EDUCATION METHODS
+// ═══════════════════════════════════════
+// ═══════════════════════════════════════
+//  METHOD SELECTION
+// ═══════════════════════════════════════
+let activeMethod = null;
+
+const METHOD_DEFS = {
+  buffett:  { name:'\u00f0\u009f\u00a7\u0099 Warren Buffett',  invest:.20, needs:.50, wants:.30 },
+  '503020': { name:'\u00e2\u009a\u0096\ufe0f Regra 50/30/20',   invest:.20, needs:.50, wants:.30 },
+  kakeibo:  { name:'\u00f0\u009f\u0093\u0093 Kakeibo',          invest:.20, needs:.55, wants:.25 },
+  ramit:    { name:'\u00f0\u009f\u00a4\u0096 Ramit Sethi',      invest:.20, needs:.50, wants:.30 },
+  latte:    { name:'\u00e2\u0098\u0095 Fator Latte',             invest:.15, needs:.55, wants:.30 },
+  envelope: { name:'\u00e2\u009c\u0089\ufe0f Envelopes',        invest:.25, needs:.40, wants:.35 },
+  snowball: { name:'\u00e2\u009d\u0084\ufe0f Bola de Neve',     invest:.10, needs:.60, wants:.30 },
+};
+
+function selectMethod(method) {
+  activeMethod = method;
+  const income = (parseFloat(document.getElementById('income').value)||0) + getVarIncome();
+  const def = METHOD_DEFS[method];
+  const fmt = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+  document.querySelectorAll('.method-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.m === method);
+  });
+
+  const banner  = document.getElementById('active-method-banner');
+  const hint    = document.getElementById('no-method-hint');
+  const limitsEl = document.getElementById('active-method-limits');
+  document.getElementById('active-method-name').textContent = def.name + ' — ativo';
+
+  if (income === 0) {
+    limitsEl.innerHTML = '<span style="font-size:11px;color:var(--warn)">Adicione sua renda no Resumo para aplicar os limites automaticamente.</span>';
+    banner.style.display = 'block';
+    hint.style.display = 'none';
+    autoSave();
+    return;
+  }
+
+  const investVal = income * def.invest;
+  const needsVal  = income * def.needs;
+  const wantsVal  = income * def.wants;
+
+  // Apply investment meta
+  const metaEl = document.getElementById('inv-meta');
+  if (metaEl) metaEl.value = Math.round(investVal);
+
+  // Distribute wants among variable limits
+  const foodBudget    = wantsVal * 0.40;
+  const sportsBudget  = wantsVal * 0.20;
+  const leisureBudget = wantsVal * 0.40;
+
+  const foodKeys    = ['supermercado','restaurante','cafe'];
+  const sportsKeys  = ['academia','esportes','equip_esporte'];
+  const leisureKeys = ['cinema','viagens','jogos','roupas'];
+
+  foodKeys.forEach((k,i) => {
+    const el = document.querySelector('[data-limit="' + k + '"]');
+    if (el) el.value = Math.round(foodBudget * [.50,.30,.20][i]);
+  });
+  sportsKeys.forEach((k,i) => {
+    const el = document.querySelector('[data-limit="' + k + '"]');
+    if (el) el.value = Math.round(sportsBudget * [.50,.30,.20][i]);
+  });
+  leisureKeys.forEach((k,i) => {
+    const el = document.querySelector('[data-limit="' + k + '"]');
+    if (el) el.value = Math.round(leisureBudget * [.30,.30,.20,.20][i]);
+  });
+
+  updateDash();
+  updateInvest();
+
+  limitsEl.innerHTML = [
+    {label:'Investimento', val:fmt(investVal), pct:Math.round(def.invest*100)+'%', color:'var(--accent)'},
+    {label:'Necessidades',  val:fmt(needsVal),  pct:Math.round(def.needs*100)+'%',  color:'var(--info)'},
+    {label:'Lazer/Desejos', val:fmt(wantsVal),  pct:Math.round(def.wants*100)+'%',  color:'var(--warn)'},
+  ].map(r => '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--muted)">' + r.label + '</span><span style="color:' + r.color + ';font-weight:700">' + r.val + ' (' + r.pct + ')</span></div>').join('');
+
+  banner.style.display = 'block';
+  hint.style.display = 'none';
+  autoSave();
+  showToast('Metodo aplicado!');
+}
+
+function clearActiveMethod() {
+  activeMethod = null;
+  document.querySelectorAll('.method-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('active-method-banner').style.display = 'none';
+  document.getElementById('no-method-hint').style.display = 'block';
+  document.querySelectorAll('[data-limit]').forEach(el => { el.value = ''; });
+  const metaEl = document.getElementById('inv-meta');
+  if (metaEl) metaEl.value = '';
+  updateDash();
+  updateInvest();
+  autoSave();
+  showToast('Metodo removido');
+}
+
+function toggleEdu(id) {
+  const body   = document.getElementById('body-' + id);
+  const toggle = document.getElementById('toggle-' + id);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  toggle.textContent = isOpen ? 'v' : '^';
+}
+
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('finapp_data');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.income) document.getElementById('income').value = data.income;
+    Object.entries(data.fields || {}).forEach(([k,v]) => {
+      const el = document.querySelector(`[data-key="${k}"]`);
+      if (el) el.value = v;
+    });
+    Object.entries(data.limits || {}).forEach(([k,v]) => {
+      const el = document.querySelector(`[data-limit="${k}"]`);
+      if (el) el.value = v;
+    });
+    if (data.geminiKey) {
+      document.getElementById('gemini-api-key').value = data.geminiKey;
+      document.getElementById('ai-status-dot').style.background = 'var(--info)';
+    }
+    if (data.varIncomeSources && data.varIncomeSources.length > 0) {
+      varIncomeSources = data.varIncomeSources;
+      varIncomeIdCounter = Math.max(...varIncomeSources.map(s => s.id), 0);
+      renderVarIncome();
+    }
+    Object.entries(data.invPat || {}).forEach(([k,v]) => {
+      const el = document.querySelector(`[data-inv-pat="${k}"]`);
+      if (el) el.value = v;
+    });
+    Object.entries(data.invAp || {}).forEach(([k,v]) => {
+      const el = document.querySelector(`[data-inv-ap="${k}"]`);
+      if (el) el.value = v;
+    });
+    if (data.invMeta) document.getElementById('inv-meta').value = data.invMeta;
+    if (data.activeMethod) selectMethod(data.activeMethod);
+    updateDash();
+    updateInvest();
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2500);
+}
+
+function showAutosave() {
+  const b = document.getElementById('autosave-badge');
+  b.classList.add('visible');
+  setTimeout(() => b.classList.remove('visible'), 2000);
+}
+
+// ═══════════════════════════════════════
+//  AI PROVIDER — GEMINI ONLY
+// ═══════════════════════════════════════
+function saveApiKey() {
+  const key = document.getElementById("gemini-api-key").value.trim();
+  document.getElementById("ai-status-dot").style.background = key ? "var(--info)" : "var(--warn)";
+  autoSave();
+}
+
+// ═══════════════════════════════════════
+//  AUTOSAVE
+// ═══════════════════════════════════════
+let autoSaveTimer = null;
+
+function autoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    const invPat = {}, invAp = {};
+    document.querySelectorAll("[data-inv-pat]").forEach(el => { invPat[el.dataset.invPat] = el.value; });
+    document.querySelectorAll("[data-inv-ap]").forEach(el  => { invAp[el.dataset.invAp]   = el.value; });
+    const data = {
+      income: document.getElementById("income").value,
+      fields: {},
+      limits: {},
+      geminiKey: document.getElementById("gemini-api-key").value,
+      varIncomeSources: varIncomeSources,
+      activeMethod: activeMethod,
+      invPat, invAp,
+      invMeta: document.getElementById("inv-meta").value
+    };
+    document.querySelectorAll("[data-key]").forEach(el => { data.fields[el.dataset.key] = el.value; });
+    document.querySelectorAll("[data-limit]").forEach(el => { data.limits[el.dataset.limit] = el.value; });
+    localStorage.setItem("finapp_data", JSON.stringify(data));
+    showAutosave();
+  }, 800);
+}
+
+function saveData() {
+  clearTimeout(autoSaveTimer);
+  const invPat = {}, invAp = {};
+  document.querySelectorAll("[data-inv-pat]").forEach(el => { invPat[el.dataset.invPat] = el.value; });
+  document.querySelectorAll("[data-inv-ap]").forEach(el  => { invAp[el.dataset.invAp]   = el.value; });
+  const data = {
+    income: document.getElementById("income").value,
+    fields: {},
+    limits: {},
+    geminiKey: document.getElementById("gemini-api-key").value,
+    varIncomeSources: varIncomeSources,
+    activeMethod: activeMethod,
+    invPat, invAp,
+    invMeta: document.getElementById("inv-meta").value
+  };
+  document.querySelectorAll("[data-key]").forEach(el => { data.fields[el.dataset.key] = el.value; });
+  document.querySelectorAll("[data-limit]").forEach(el => { data.limits[el.dataset.limit] = el.value; });
+  localStorage.setItem("finapp_data", JSON.stringify(data));
+  showToast("💾 Dados salvos com sucesso!");
+}
+
+// ═══════════════════════════════════════
+//  CHAT — GEMINI ONLY
+// ═══════════════════════════════════════
+function getFinancialContext() {
+  const vals = getValues();
+  const lims = getLimits();
+  const fixedIncome = parseFloat(document.getElementById("income").value) || 0;
+  const varIncome = getVarIncome();
+  const income = fixedIncome + varIncome;
+  const totalFixed = FIXED_KEYS.reduce((s,k) => s + (vals[k]||0), 0);
+  const totalVariable = VARIABLE_KEYS.reduce((s,k) => s + (vals[k]||0), 0);
+  const totalSpent = totalFixed + totalVariable;
+  const remaining = income - totalSpent;
+  let ctx = "SITUACAO FINANCEIRA DO USUARIO (" + MONTHS[currentMonth.getMonth()] + " " + currentMonth.getFullYear() + "):\n";
+  ctx += "Renda fixa: R$ " + fixedIncome.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "\n";
+  if (varIncome > 0) {
+    ctx += "Renda variavel: R$ " + varIncome.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "\n";
+    varIncomeSources.forEach(s => {
+      if (parseFloat(s.value) > 0)
+        ctx += "  - " + s.label + ": R$ " + parseFloat(s.value).toLocaleString("pt-BR",{minimumFractionDigits:2}) + "\n";
+    });
+  }
+  ctx += "Renda total: R$ " + income.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "\n";
+  ctx += "Total de gastos: R$ " + totalSpent.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "\n";
+  ctx += "Saldo restante: R$ " + remaining.toLocaleString("pt-BR",{minimumFractionDigits:2}) + (remaining < 0 ? " (DEFICIT!)" : "") + "\n\n";
+  ctx += "DESPESAS FIXAS (Total: R$ " + totalFixed.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "):";
+  const FIXED_LABELS = {
+    aluguel:"Aluguel/Financiamento",agua:"Agua",energia:"Energia eletrica",
+    internet:"Internet",telefone:"Telefone celular",
+    transp_pub:"Transporte publico",transp_carro:"Combustivel/carro",
+    terapia:"Terapia",plano_saude:"Plano de saude",medicamentos:"Medicamentos",
+    cartao:"Fatura do cartao",emprestimos:"Emprestimos/parcelas",
+    streaming:"Streaming",musica:"Musica",cloud:"Software/cloud",outras_ass:"Outras assinaturas",
+    escola:"Escola/faculdade",cursos:"Cursos online"
+  };
+  FIXED_KEYS.forEach(k => {
+    if (vals[k] > 0) ctx += "\n  " + FIXED_LABELS[k] + ": R$ " + vals[k].toLocaleString("pt-BR",{minimumFractionDigits:2});
+  });
+  ctx += "\n\nDESPESAS VARIAVEIS (Total: R$ " + totalVariable.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "):";
+  VARIABLE_KEYS.forEach(k => {
+    if (vals[k] > 0 || lims[k] > 0) {
+      const lim = lims[k] || 0;
+      const status = lim > 0 ? " [limite: R$ " + lim.toLocaleString("pt-BR",{minimumFractionDigits:2}) + " - " + (vals[k] > lim ? "ESTOURADO" : Math.round((vals[k]/lim)*100)+"%") + "]" : "";
+      ctx += "\n  " + LABELS[k] + ": R$ " + (vals[k]||0).toLocaleString("pt-BR",{minimumFractionDigits:2}) + status;
+    }
+  });
+  // Investments
+  const totalPat = INV_CATS.reduce((s,c) => s + getInvPat(c.key), 0);
+  const totalAp  = INV_CATS.reduce((s,c) => s + getInvAp(c.key),  0);
+  if (totalPat > 0 || totalAp > 0) {
+    ctx += "\n\nINVESTIMENTOS (Patrimonio total: R$ " + totalPat.toLocaleString("pt-BR",{minimumFractionDigits:2}) + " | Aporte mensal: R$ " + totalAp.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "):";
+    INV_CATS.forEach(c => {
+      const pat = getInvPat(c.key), ap = getInvAp(c.key);
+      if (pat > 0 || ap > 0) {
+        ctx += "\n  " + c.label + ": patrimonio R$ " + pat.toLocaleString("pt-BR",{minimumFractionDigits:2});
+        if (ap > 0) ctx += " | aporte R$ " + ap.toLocaleString("pt-BR",{minimumFractionDigits:2}) + "/mes";
+      }
+    });
+    const meta = parseFloat(document.getElementById("inv-meta").value) || 0;
+    if (meta > 0) ctx += "\n  Meta de aporte mensal: R$ " + meta.toLocaleString("pt-BR",{minimumFractionDigits:2});
+  }
+  return ctx;
+}
+
+const SYSTEM_PROMPT = "Voce e um assistente financeiro pessoal inteligente e empatico, especializado em financas pessoais brasileiras. Analise os dados financeiros fornecidos e de conselhos praticos, especificos e diretos em portugues brasileiro. Use R$ para valores. Seja conciso mas completo. Use emojis com moderacao. Quando identificar problemas financeiros, seja honesto mas construtivo. Sempre de solucoes praticas.";
+
+async function callGemini(finCtx, text) {
+  const key = document.getElementById("gemini-api-key").value.trim();
+  if (!key) {
+    return "Chave Gemini nao configurada.\n\nCole sua chave gratuita no campo acima.\nObtenha em: https://aistudio.google.com/app/apikey";
+  }
+  const prompt = SYSTEM_PROMPT + "\n\n[CONTEXTO FINANCEIRO]\n" + finCtx + "\n\n[PERGUNTA]\n" + text;
+  const models = ["gemini-2.0-flash-lite","gemini-2.0-flash","gemini-1.5-flash-latest","gemini-1.5-flash-8b-latest","gemini-pro"];
+  for (const model of models) {
+    try {
+      const resp = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+          })
+        }
+      );
+      const data = await resp.json();
+      if (data.error) {
+        const code = data.error.code;
+        const msg = data.error.message || "";
+        if (code === 401 || (code === 400 && msg.toLowerCase().includes("api key")))
+          return "API Key invalida. Verifique em https://aistudio.google.com/app/apikey";
+        if (code === 403)
+          return "Acesso negado. Ative a Gemini API: https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com";
+        continue;
+      }
+      const reply = data.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+      if (reply) return reply;
+    } catch(e) { continue; }
+  }
+  return "Gemini indisponivel no momento.\n\nCota esgotada ou erro de rede - aguarde alguns minutos e tente novamente.";
+}
+
+async function sendMessage() {
+  const input = document.getElementById("user-input");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  input.style.height = "auto";
+  addBubble(text, "out");
+  document.getElementById("send-btn").disabled = true;
+  document.getElementById("typing").classList.add("visible");
+  scrollChat();
+  try {
+    const reply = await callGemini(getFinancialContext(), text);
+    document.getElementById("typing").classList.remove("visible");
+    addBubble(reply, "in");
+  } catch(e) {
+    document.getElementById("typing").classList.remove("visible");
+    addBubble("Erro de conexao. Verifique sua internet e tente novamente.", "in");
+  }
+  document.getElementById("send-btn").disabled = false;
+  scrollChat();
+}
+
+function sendChip(text) {
+  document.getElementById("user-input").value = text;
+  switchTab("chat");
+  sendMessage();
+}
+
+function addBubble(text, dir) {
+  const area = document.getElementById("chat-area");
+  const now = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  const div = document.createElement("div");
+  div.className = "bubble-wrap " + dir;
+  div.innerHTML = '<div class="bubble">' + text.replace(/\n/g,"<br>") + '<div class="bubble-time">' + now + (dir==="out"?" checkcheck":"") + "</div></div>";
+  area.appendChild(div);
+  scrollChat();
+}
+
+function scrollChat() {
+  const area = document.getElementById("chat-area");
+  setTimeout(() => { area.scrollTop = area.scrollHeight; }, 50);
+}
+
+// ═══════════════════════════════════════
+//  STATUS TIME
+// ═══════════════════════════════════════
+function updateTime() {
+  const now = new Date();
+  document.getElementById('status-time').textContent =
+    now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ═══════════════════════════════════════
+//  INPUT EVENTS
+// ═══════════════════════════════════════
+document.getElementById('user-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+document.getElementById('user-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ═══════════════════════════════════════
+//  WIRE AUTOSAVE TO ALL INPUTS
+// ═══════════════════════════════════════
+document.querySelectorAll('[data-key], [data-limit], #income').forEach(el => {
+  el.addEventListener('input', () => autoSave());
+});
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+document.getElementById('month-label').textContent =
+  MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+
+// Build welcome message
+(function initChat() {
+  const chatArea = document.getElementById('chat-area');
+  const todayStr = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  chatArea.innerHTML = `
+    <div style="text-align:center;margin:10px 0 6px">
+      <span style="background:rgba(30,45,61,.85);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:8px">${todayStr}</span>
+    </div>
+    <div class="bubble-wrap in">
+      <div class="bubble">
+        Olá! 👋 Sou seu <strong>Assistente Financeiro</strong>. Preencha sua renda e despesas nas abas acima e depois me pergunte qualquer coisa sobre sua situação financeira.<br><br>
+        Cole sua <strong style="color:var(--info)">Gemini API Key</strong> no campo acima e pergunte qualquer coisa sobre suas finanças. Obtenha sua chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--info)">aistudio.google.com</a> ↗
+        <div class="chip-list">
+          <div class="chip" onclick="sendChip('Como estão meus gastos este mês?')">📊 Ver análise</div>
+          <div class="chip" onclick="sendChip('Onde posso economizar?')">💡 Economizar</div>
+          <div class="chip" onclick="sendChip('Estou dentro do orçamento?')">✅ Orçamento</div>
+          <div class="chip" onclick="sendChip('Dicas para guardar dinheiro')">🏦 Poupar</div>
+        </div>
+        <div class="bubble-time">agora</div>
+      </div>
+    </div>
+  `;
+})();
+
+// Wire investment inputs to autosave
+document.querySelectorAll('[data-inv-pat],[data-inv-ap]').forEach(el => {
+  el.addEventListener('input', () => { updateInvest(); });
+});
+document.getElementById('inv-meta').addEventListener('input', () => updateInvest());
+
+loadData();
+renderVarIncome();
+updateInvest();
+updateDash();
+</script>
+</body>
+</html>
+
